@@ -1,36 +1,31 @@
 import imaplib
+import keys
 import email
-import codecs
-# import regex
-import string
-
+import ollama
 
 
 imap = imaplib.IMAP4_SSL("imap.gmail.com")
-imap.login("dollardev05@gmail.com", "mdjd tfkk pvcj uujk")
-# imap.select("inbox")
+imap.login("dollardev05@gmail.com", keys.email_api_key)
+imap.select("inbox")
 
-# status, messages = imap.search(None, "ALL")
-# messages = messages[0].split(b' ')
-# for mail in messages:
-#     _, msg = imap.fetch(mail, "(RFC822)")
-#     for response in msg:
-#         if isinstance(response, tuple):
-#             msg = email.message_from_bytes(response[1])
-#             subject = msg["subject"]
-#             print(subject)
-#             if msg.is_multipart():
-#                 for part in msg.walk():
-#                     content_type = part.get_content_type()
-#                     content_disposition = str(part.get("Content-Disposition"))
-#                     try:
-#                         body = part.get_payload(decode=True).decode()
-#                     except:
-#                         pass
-#                     if content_type == "text/plain" and "attachment" not in content_disposition:
-#                         print(body)
-#             else:
-#                 content_type = msg.get_content_type()
-#                 body = msg.get_payload(decode=True).decode()
-#                 if content_type == "text/plain":
-#                     print(body) 
+status, messages = imap.search(None, "ALL")
+last_5 = messages[0].split()[::-1][:5]
+print(last_5)
+for i in range(5):
+    status, msg_data = imap.fetch(last_5[i], "(RFC822)")
+    raw_email = msg_data[0][1]
+    msg = email.message_from_bytes(raw_email)
+    for part in msg.walk():
+        if part.get_content_type() == 'text/plain':
+            email_body = part.get_payload(decode=True).decode('utf-8')
+            response = ollama.generate(
+                model='deepseek-r1:latest',
+                prompt=f"{email_body} this is an email i got can you summarize this into a short brief summary and then give me actionable steps",
+                options={
+                    'temperature': 0.8,
+                    'num_ctx': 4096  # Set a custom context length
+                }
+)
+            print(response['response'])
+
+        
