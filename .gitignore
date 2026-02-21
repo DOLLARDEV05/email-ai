@@ -1,2 +1,10 @@
 keys.py
 fetch.py
+__pycache__/
+*.pyc
+*.pyo
+keys.py
+creds.py
+.env
+venv/
+.vscode
