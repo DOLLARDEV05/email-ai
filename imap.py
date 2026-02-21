@@ -2,7 +2,7 @@ import imaplib
 import keys
 import email
 import ollama
-
+from twilio.rest import Client
 
 imap = imaplib.IMAP4_SSL("imap.gmail.com")
 imap.login("dollardev05@gmail.com", keys.email_api_key)
@@ -27,5 +27,18 @@ for i in range(5):
                 }
 )
             print(response['response'])
+            account_sid = keys.sid
+            auth_token = keys.token
+            client = Client(account_sid, auth_token)
+
+            message = client.messages.create(
+                from_='whatsapp:+14155238886',
+                body=response['response'],
+                to=keys.mynumber
+            )
+
+            print(message.sid)
+
+
 
         
